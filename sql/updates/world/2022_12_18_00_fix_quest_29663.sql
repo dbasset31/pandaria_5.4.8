@@ -1,0 +1,1 @@
+UPDATE creature_template SET spell1 = '109308', mindmg = '5', maxdmg = '10' WHERE entry = '65468';
