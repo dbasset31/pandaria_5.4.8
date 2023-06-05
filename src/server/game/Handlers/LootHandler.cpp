@@ -123,7 +123,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recvData)
         {
             Creature* creature = GetPlayer()->GetMap()->GetCreature(guid);
 
-            bool lootAllowed = creature && creature->IsAlive() == ((player->getClass() == CLASS_ROGUE || creature->GetEntry() == 56233) && creature->lootForPickPocketed);  // hack, but I dont know how it must work (pickpocket loot should be available for npc 56233)
+            bool lootAllowed = creature && creature->IsAlive() == ((player->GetClass() == CLASS_ROGUE || creature->GetEntry() == 56233) && creature->lootForPickPocketed);  // hack, but I dont know how it must work (pickpocket loot should be available for npc 56233)
             bool isInDistance = creature && creature->IsWithinDistInMap(player, INTERACTION_DISTANCE) || aoeLoot || player->HasAura(126746); // Glyph of Fetch
             if (!lootAllowed || !isInDistance)
             {
@@ -213,7 +213,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
             case HIGHGUID_VEHICLE:
             {
                 Creature* creature = player->GetMap()->GetCreature(guid);
-                bool lootAllowed = creature && creature->IsAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
+                bool lootAllowed = creature && creature->IsAlive() == (player->GetClass() == CLASS_ROGUE && creature->lootForPickPocketed);
                 bool isInDistance = creature && creature->IsWithinDistInMap(player, INTERACTION_DISTANCE) || isAoE || player->HasAura(126746); // Glyph of Fetch
                 if (lootAllowed && isInDistance)
                 {
@@ -528,7 +528,7 @@ void WorldSession::DoLootRelease(uint64 guid)
         }
         else
         {
-            if (pItem->loot.isLooted() || !(proto->Flags & ITEM_PROTO_FLAG_OPENABLE)) // Only delete item if no loot or money (unlooted loot is saved to db) + Fix Exploit 
+            if (pItem->loot.isLooted() || !(proto->Flags & ITEM_PROTO_FLAG_HAS_LOOT)) // Only delete item if no loot or money (unlooted loot is saved to db) + Fix Exploit 
                 player->DestroyItem(pItem->GetBagSlot(), pItem->GetSlot(), true);
         }
         return;                                             // item can be looted only single player
@@ -537,7 +537,7 @@ void WorldSession::DoLootRelease(uint64 guid)
     {
         Creature* creature = GetPlayer()->GetMap()->GetCreature(guid);
 
-        bool lootAllowed = creature && creature->IsAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
+        bool lootAllowed = creature && creature->IsAlive() == (player->GetClass() == CLASS_ROGUE && creature->lootForPickPocketed);
         if (!lootAllowed || (player->GetLootGUID() == guid && !creature->IsWithinDistInMap(_player, INTERACTION_DISTANCE)))
             return;
 

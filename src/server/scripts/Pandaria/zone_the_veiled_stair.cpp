@@ -24,7 +24,8 @@
 #define WRATHION_MAX_WP_Q4 7
 #define FEL_METEORS_RANGE 6.0f
 #define SHA_TOUCHED_GEM_RANGE 10.0f
-#define WRATHION_GOSSIP "Let`s talk..."
+#define WRATHION_GOSSIP_EN "Let`s talk..."
+#define WRATHION_GOSSIP_RU "Давай поговорим..."
 
 // Legend in the making
 const Position ScenarioPoint  = { 826.33f, -169.69f, 415.26f, 2.61f };
@@ -510,14 +511,18 @@ class npc_wrathion : public CreatureScript
 
         bool OnGossipHello(Player* player, Creature* creature) override
         {
+            bool ru = player->GetSession()->GetSessionDbLocaleIndex() == LOCALE_ruRU; // alexkulya: реализовать через БД позже
+
             if (creature->IsQuestGiver())
                 player->PrepareQuestMenu(creature->GetGUID());
 
-            if (player->GetQuestStatus(QUEST_LEGEND_IN_THE_MAKING) == QUEST_STATUS_INCOMPLETE)
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, WRATHION_GOSSIP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            if (!player->FindNearestCreature(NPC_TONG_THE_FIXER, 40.0f) && player->GetQuestStatus(QUEST_LEGEND_IN_THE_MAKING) == QUEST_STATUS_INCOMPLETE)
+            {
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ru ? WRATHION_GOSSIP_RU : WRATHION_GOSSIP_EN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            }
 
             if (player->GetQuestStatus(QUEST_MEASURE_OF_THE_LEADER_A) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(QUEST_MEASURE_OF_THE_LEADER_H) == QUEST_STATUS_INCOMPLETE)
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, WRATHION_GOSSIP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, ru ? WRATHION_GOSSIP_RU : WRATHION_GOSSIP_EN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
             player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
             return true;
@@ -595,6 +600,7 @@ class npc_tong_the_fixer_legend_in_the_making : public CreatureScript
                                 me->m_Events.Schedule(delay += me->GetSplineDuration() + 2500, EVENT_TONG_MOVE_HOME, [this]()
                                 {
                                     me->GetMotionMaster()->MovePoint(0, me->GetHomePosition());
+                                    me->DespawnOrUnsummon(30000);
                                 });
                             });
                         });
@@ -1678,7 +1684,7 @@ struct npc_wrathion_xuen_challenge : public customCreatureAI
             hasDefeat = true;
             summons.DespawnAll();
             events.Reset();
-            me->setFaction(35);
+            me->SetFaction(35);
             DoCast(me, SPELL_CHALLENGE_DONE_CREDIT, true);
             me->DespawnOrUnsummon(5 * IN_MILLISECONDS);
         }
@@ -2081,7 +2087,7 @@ struct npc_willy_wilder : public ScriptedAI
     {
         events.Reset();
 
-        me->setFaction(35); // by default
+        me->SetFaction(35); // by default
 
         scheduler
             .Schedule(Milliseconds(3000), [this](TaskContext context)
@@ -2098,7 +2104,7 @@ struct npc_willy_wilder : public ScriptedAI
             {
                 me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
                 me->SetHomePosition(*me);
-                me->setFaction(7);
+                me->SetFaction(7);
                 Talk(TALK_INTRO);
             });
         });
